@@ -1,7 +1,9 @@
 package ru.netology.web;
 
+import io.github.bonigarcia.wdm.WebDriverManager;
 import org.junit.jupiter.api.*;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 
@@ -12,7 +14,7 @@ public class CardOrderTest {
 
     @BeforeAll
     static void setUpAll() {
-        System.setProperty("webdriver.chrome.driver", "./driver/win/chromedriver.exe");
+        WebDriverManager.chromedriver().setup();
     }
 
     @BeforeEach
@@ -33,6 +35,7 @@ public class CardOrderTest {
     @Test
     void shouldTestV1() {
         driver.get("http://localhost:9999/");
+        WebElement form = driver.findElement(cssSelector("form"));
         driver.findElement(cssSelector("[data-test-id='name'] input")).sendKeys("Фомина Ирина");
         driver.findElement(cssSelector("[data-test-id='phone'] input")).sendKeys("+79258745098");
         driver.findElement(cssSelector("[data-test-id='agreement']")).click();
