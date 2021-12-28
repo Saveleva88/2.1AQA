@@ -2,11 +2,13 @@ package ru.netology.web;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.junit.jupiter.api.*;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.openqa.selenium.By.cssSelector;
 
 public class CardOrderTest {
@@ -14,7 +16,7 @@ public class CardOrderTest {
 
     @BeforeAll
     static void setUpAll() {
-        WebDriverManager.chromedriver().setup();
+        WebDriverManager.chromedriver().setup(); // не надо качивать драйвер и вкладывать в отдельную папку
     }
 
     @BeforeEach
@@ -24,6 +26,7 @@ public class CardOrderTest {
         options.addArguments("--no-sandbox");
         options.addArguments("--headless");
         driver = new ChromeDriver(options);
+        driver.get("http://localhost:9999/");
     }
 
     @AfterEach
@@ -33,79 +36,90 @@ public class CardOrderTest {
     }
 
     @Test
-    void shouldTestV1() {
+    public void shouldSendForm() {
         driver.get("http://localhost:9999/");
-        WebElement form = driver.findElement(cssSelector("form"));
-        driver.findElement(cssSelector("[data-test-id='name'] input")).sendKeys("Фомина Ирина");
-        driver.findElement(cssSelector("[data-test-id='phone'] input")).sendKeys("+79258745098");
-        driver.findElement(cssSelector("[data-test-id='agreement']")).click();
-        driver.findElement(cssSelector("button")).click();
-        String message = driver.findElement(cssSelector("[data-test-id='order-success']")).getText();
-        Assertions.assertEquals("Ваша заявка успешно отправлена! Наш менеджер свяжется с вами в ближайшее время.", message.strip());
-    }
-    @Test
-    void shouldTestV2() {
-        driver.get("http://localhost:9999/");
-        WebElement form = driver.findElement(cssSelector("form"));
-        driver.findElement(cssSelector("[data-test-id='phone'] input")).sendKeys("+79258745098");
-        driver.findElement(cssSelector("[data-test-id='agreement']")).click();
-        driver.findElement(cssSelector("button")).click();
-        String message = driver.findElement(cssSelector(".input_invalid .input__sub")).getText();
-        Assertions.assertEquals("Поле обязательно для заполнения", message.strip());
+        System.out.println("");
     }
 
     @Test
-    void shouldTestV3() {
-        driver.get("http://localhost:9999/");
-        WebElement form = driver.findElement(cssSelector("form"));
-        driver.findElement(cssSelector("[data-test-id='name'] input")).sendKeys("Фомина Ирина");
-        driver.findElement(cssSelector("[data-test-id='agreement']")).click();
-        driver.findElement(cssSelector("button")).click();
-        String message = driver.findElement(cssSelector(".input_invalid .input__sub")).getText();
-        Assertions.assertEquals("Поле обязательно для заполнения", message.strip());
+    void shouldSendSuccessfulForm() {
+        driver.findElement(By.cssSelector("[data-test-id='name'] input")).sendKeys("Фомина Ирина");
+        driver.findElement(By.cssSelector("[data-test-id='phone'] input")).sendKeys("+79258745098");
+        driver.findElement(By.cssSelector("[data-test-id='agreement']")).click();
+        driver.findElement(By.cssSelector("button")).click();
+        String text = driver.findElement(By.cssSelector("[data-test-id='order-success']")).getText().trim();
+        String expected = "Ваша заявка успешно отправлена! Наш менеджер свяжется с вами в ближайшее время.";
+        assertEquals(expected, text);
     }
 
     @Test
-    void shouldTestV4() {
-        driver.get("http://localhost:9999/");
-        WebElement form = driver.findElement(cssSelector("form"));
-        driver.findElement(cssSelector("[data-test-id='name'] input")).sendKeys("Фомина Ирина");
-        driver.findElement(cssSelector("[data-test-id='phone'] input")).sendKeys("+79258745098");
-        driver.findElement(cssSelector("button")).click();
-        String message = driver.findElement(cssSelector(".input_invalid")).getText();
-        Assertions.assertEquals("Я соглашаюсь с условиями обработки и использования моих персональных данных и разрешаю сделать запрос в бюро кредитных историй", message.strip());
+    void shouldSendSuccessfulFormWithHyphen() {
+        driver.findElement(By.cssSelector("[data-test-id='name'] input")).sendKeys("Фомина София-Ирина");
+        driver.findElement(By.cssSelector("[data-test-id='phone'] input")).sendKeys("+79258745098");
+        driver.findElement(By.cssSelector("[data-test-id='agreement']")).click();
+        driver.findElement(By.cssSelector("button")).click();
+        String text = driver.findElement(By.cssSelector("[data-test-id='order-success']")).getText().trim();
+        String expected = "Ваша заявка успешно отправлена! Наш менеджер свяжется с вами в ближайшее время.";
+        assertEquals(expected, text);
     }
 
     @Test
-    void shouldTestV5() {
-        driver.get("http://localhost:9999/");
-        WebElement form = driver.findElement(cssSelector("form"));
-        driver.findElement(cssSelector("button")).click();
-        String message = driver.findElement(cssSelector(".input__sub")).getText();
-        Assertions.assertEquals("Поле обязательно для заполнения", message.strip());
+    void shouldSendFormWithoutName() {
+        driver.findElement(By.cssSelector("[data-test-id='phone'] input")).sendKeys("+79258745098");
+        driver.findElement(By.cssSelector("[data-test-id='agreement']")).click();
+        driver.findElement(By.cssSelector("button")).click();
+        String text = driver.findElement(By.cssSelector("[data-test-id='name'].input_invalid .input__sub")).getText().trim();
+        String expected = "Поле обязательно для заполнения";
+        assertEquals(expected, text);
     }
 
     @Test
-    void shouldTestV6() {
-        driver.get("http://localhost:9999/");
-        WebElement form = driver.findElement(cssSelector("form"));
-        driver.findElement(cssSelector("[data-test-id='name'] input")).sendKeys("Fomina Irina");
-        driver.findElement(cssSelector("[data-test-id='phone'] input")).sendKeys("+79258745098");
-        driver.findElement(cssSelector("[data-test-id='agreement']")).click();
-        driver.findElement(cssSelector("button")).click();
-        String message = driver.findElement(cssSelector(".input_invalid .input__sub")).getText();
-        Assertions.assertEquals("Имя и Фамилия указаные неверно. Допустимы только русские буквы, пробелы и дефисы.", message.strip());
+    void shouldSendFormWithoutPhone() {
+        driver.findElement(By.cssSelector("[data-test-id='name'] input")).sendKeys("Фомина Ирина");
+        driver.findElement(By.cssSelector("[data-test-id='agreement']")).click();
+        driver.findElement(By.cssSelector("button")).click();
+        String text = driver.findElement(By.cssSelector("[data-test-id='phone'].input_invalid .input__sub")).getText().trim();
+        String expected = "Поле обязательно для заполнения";
+        assertEquals(expected, text);
     }
 
     @Test
-    void shouldTestV7() {
-        driver.get("http://localhost:9999/");
-        WebElement form = driver.findElement(cssSelector("form"));
-        driver.findElement(cssSelector("[data-test-id='name'] input")).sendKeys("Фомина Ирина");
-        driver.findElement(cssSelector("[data-test-id='phone'] input")).sendKeys("79258745098");
-        driver.findElement(cssSelector("[data-test-id='agreement']")).click();
-        driver.findElement(cssSelector("button")).click();
-        String message = driver.findElement(cssSelector(".input_invalid .input__sub")).getText();
-        Assertions.assertEquals("Телефон указан неверно. Должно быть 11 цифр, например, +79012345678.", message.strip());
+    void  shouldSendFormWithoutCheckbox() {
+        driver.findElement(By.cssSelector("[data-test-id='name'] input")).sendKeys("Фомина Ирина");
+        driver.findElement(By.cssSelector("[data-test-id='phone'] input")).sendKeys("+79258745098");
+        driver.findElement(By.cssSelector("button")).click();
+        String text = driver.findElement(By.cssSelector("[data-test-id='agreement'] .checkbox__text")).getText().trim();
+        String expected = "Я соглашаюсь с условиями обработки и использования моих персональных данных и разрешаю сделать запрос в бюро кредитных историй";
+        assertEquals(expected, text);
+    }
+
+    @Test
+    void shouldSendFormWithoutAll() {
+        driver.findElement(By.cssSelector("button")).click();
+        String text = driver.findElement(By.cssSelector(".input_invalid .input__sub")).getText().trim();
+        String expected = "Поле обязательно для заполнения";
+        assertEquals(expected, text);
+    }
+
+    @Test
+    void shouldSendFormOnEnglishName() {
+        driver.findElement(By.cssSelector("[data-test-id='name'] input")).sendKeys("Fomina Irina");
+        driver.findElement(By.cssSelector("[data-test-id='phone'] input")).sendKeys("+79258745098");
+        driver.findElement(By.cssSelector("[data-test-id='agreement']")).click();
+        driver.findElement(By.cssSelector("button")).click();
+        String text = driver.findElement(By.cssSelector("[data-test-id='name'].input_invalid .input__sub")).getText().trim();
+        String expected = "Имя и Фамилия указаные неверно. Допустимы только русские буквы, пробелы и дефисы.";
+        assertEquals(expected, text);
+    }
+
+    @Test
+    void shouldSendFormWithPartPhone() {
+        driver.findElement(By.cssSelector("[data-test-id='name'] input")).sendKeys("Фомина Ирина");
+        driver.findElement(By.cssSelector("[data-test-id='phone'] input")).sendKeys("79258745098");
+        driver.findElement(By.cssSelector("[data-test-id='agreement']")).click();
+        driver.findElement(By.cssSelector("button")).click();
+        String text = driver.findElement(By.cssSelector("[data-test-id='phone'].input_invalid .input__sub")).getText().trim();
+        String expected = "Телефон указан неверно. Должно быть 11 цифр, например, +79012345678.";
+        assertEquals(expected, text);
     }
 }
